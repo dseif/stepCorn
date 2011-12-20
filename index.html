@@ -11,21 +11,48 @@
         frameAnimation: true
       }),
       count = 0,
-      steps = document.getElementById( "steps" ),
-      userSteps = document.getElementById( "userSteps" ),
+      stepsLeft = document.getElementById( "stepsLeft" ),
+      stepsDown= document.getElementById( "stepsDown" ),
+      stepsUp = document.getElementById( "stepsUp" ),
+      stepsRight = document.getElementById( "stepsRight" ),
+      userSteps = document.getElementById( "steps" ),
+      keysDown = [false, false, false, false];
       arrowsDown = {
 
         37: function()  {
-          userSteps.innerHTML = "1000";
+          keysDown[ 0 ] = true;
+          stepsLeft.innerHTML = "1";
         },
         38: function() {
-          userSteps.innerHTML = "0100";
+          keysDown[ 1 ] = true;
+          stepsUp.innerHTML = "1";
         },
         39: function() {
-          userSteps.innerHTML = "0001";
+          keysDown[ 2 ] = true;
+          stepsRight.innerHTML = "1";
         },
         40: function() {
-          userSteps.innerHTML = "0010";
+          keysDown[ 3 ] = true;
+          stepsDown.innerHTML = "1";
+        }
+      },
+      arrowsUp = {
+
+        37: function()  {
+          keysDown[ 0 ] = false;
+          stepsLeft.innerHTML = "0";
+        },
+        38: function() {
+          keysDown[ 1 ] = false;
+          stepsUp.innerHTML = "0";
+        },
+        39: function() {
+          keysDown[ 2 ] = false;
+          stepsRight.innerHTML = "0";
+        },
+        40: function() {
+          keysDown[ 3 ] = false;
+          stepsDown.innerHTML = "0";
         }
       };
 
@@ -37,43 +64,51 @@
       window.addEventListener( "keyup", function( event ) {
 
         userSteps.innerHTML = "0000";
+        arrowsUp[ event.keyCode ] && arrowsUp[ event.keyCode ]();
       });
 
       popcorn.listen( "canplayall", function() {
-      popcorn.parseSM( "stepfiles/nirvanaDestiny.sm", function( data ) { 
 
+        popcorn.parseSM( "stepfiles/nirvanaDestiny.sm", function( data ) { 
 
-        var beatRate = data[ 0 ].beatRate;
+          var beatRate = data[ 0 ].beatRate;
 
-        for( var i = data[ 0 ].start; i < popcorn.duration(); i += beatRate ) {
+          for( var i = data[ 0 ].start; i < popcorn.duration(); i += beatRate ) {
 
-          popcorn.exec( i, function() {
+            popcorn.exec( i, function() {
 
-            // call pulse method here
-            steps.style.backgroundColor = "#22ff00";
-            setTimeout(function() {
-              steps.style.backgroundColor = "#FFFFFF";
-            }, 250 );
-          });
-        }
+              // call pulse method here
+              steps.style.backgroundColor = "#22ff00";
 
-        for( var i = 0, l = data.length; i < l; i++ ) {
-          popcorn.exec( data[ i ].start, function() {
-            console.log( data[ count ].note );
-            steps.innerHTML = data[ count ].note;
-            count++;
-          });
-        }
+              setTimeout(function() {
+                steps.style.backgroundColor = "#FFFFFF";
+              }, 250 );
+            });
+          }
+
+          for( var i = 0, l = data.length; i < l; i++ ) {
+
+            popcorn.exec( data[ i ].start, function() {
+
+              steps.innerHTML = data[ count ].note;
+              count++;
+            });
+          }
+        });
       });
-    });
     });
   </script>
 </head>
 <body>
+  <h1>User Arrows</h1>
+  <div id="userSteps">
+    <h2 id="stepsLeft" style="display:inline-block">0</h2>
+    <h2 id="stepsDown" style="display:inline-block">0</h2>
+    <h2 id="stepsUp" style="display:inline-block">0</h2>
+    <h2 id="stepsRight" style="display:inline-block">0</h2>
+  </div>
   <h1>Scrolling Arrows</h1>
-  <h2 id="steps"></h2>
-  <h1>Input Arrows</h1>
-  <h2 id="userSteps">0000</h2>
+  <h2 id="steps">0000</h2>
   <div>
     <audio id="stepCorn" controls> 
       <source src="songs/nirvanaDestiny.ogg" />
