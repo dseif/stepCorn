@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>StepCorn</title>
+  <script src="popcorn/popcorn.js"></script>
+  <script src="popcorn/popcorn.parserSM.js"></script>
+  <script>
+    Popcorn(function() {
+
+      var popcorn = Popcorn( "#stepCorn", {
+        frameAnimation: true
+      }),
+      count = 0,
+      steps = document.getElementById( "steps" ),
+      userSteps = document.getElementById( "userSteps" ),
+      arrowsDown = {
+
+        37: function()  {
+          userSteps.innerHTML = "1000";
+        },
+        38: function() {
+          userSteps.innerHTML = "0100";
+        },
+        39: function() {
+          userSteps.innerHTML = "0001";
+        },
+        40: function() {
+          userSteps.innerHTML = "0010";
+        }
+      };
+
+      window.addEventListener( "keydown", function( event ) {
+
+        arrowsDown[ event.keyCode ] && arrowsDown[ event.keyCode ]();
+      });
+
+      window.addEventListener( "keyup", function( event ) {
+
+        userSteps.innerHTML = "0000";
+      });
+
+      popcorn.listen( "canplayall", function() {
+      popcorn.parseSM( "stepfiles/nirvanaDestiny.sm", function( data ) { 
+
+
+        var beatRate = data[ 0 ].beatRate;
+
+        for( var i = data[ 0 ].start; i < popcorn.duration(); i += beatRate ) {
+
+          popcorn.exec( i, function() {
+
+            // call pulse method here
+            steps.style.backgroundColor = "#22ff00";
+            setTimeout(function() {
+              steps.style.backgroundColor = "#FFFFFF";
+            }, 250 );
+          });
+        }
+
+        for( var i = 0, l = data.length; i < l; i++ ) {
+          popcorn.exec( data[ i ].start, function() {
+            console.log( data[ count ].note );
+            steps.innerHTML = data[ count ].note;
+            count++;
+          });
+        }
+      });
+    });
+    });
+  </script>
+</head>
+<body>
+  <h1>Scrolling Arrows</h1>
+  <h2 id="steps"></h2>
+  <h1>Input Arrows</h1>
+  <h2 id="userSteps">0000</h2>
+  <div>
+    <audio id="stepCorn" controls> 
+      <source src="songs/nirvanaDestiny.ogg" />
+      <p>Your user agent does not support the HTML5 Video element.</p> 
+    </audio> 
+  </div>
+</body>
+</html>
