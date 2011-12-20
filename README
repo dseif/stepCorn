@@ -1,0 +1,5 @@
+# stepCorn #
+
+This is hacky attempt at porting StepMania to the browser.  It is built with HTML, JavaScript and is utilizing the Popcorn.js and Processing.js libraries.
+
+StepMania stepfiles are being parsed in order to generate Popcorn events which are later drawn by Processing.js.
