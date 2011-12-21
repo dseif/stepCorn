@@ -15,7 +15,7 @@
       stepsDown= document.getElementById( "stepsDown" ),
       stepsUp = document.getElementById( "stepsUp" ),
       stepsRight = document.getElementById( "stepsRight" ),
-      userSteps = document.getElementById( "steps" ),
+      steps = document.getElementById( "steps" ),
       keysDown = [false, false, false, false];
       arrowsDown = {
 
@@ -59,11 +59,11 @@
       window.addEventListener( "keydown", function( event ) {
 
         arrowsDown[ event.keyCode ] && arrowsDown[ event.keyCode ]();
+        console.log( keysDown );
       });
 
       window.addEventListener( "keyup", function( event ) {
 
-        userSteps.innerHTML = "0000";
         arrowsUp[ event.keyCode ] && arrowsUp[ event.keyCode ]();
       });
 
