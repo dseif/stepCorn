@@ -3,12 +3,14 @@
 Popcorn(function() {
 
   var StepCorn = {},
-      arrows = [];
+      arrows = [],
+      allNotes = {},
+      activeNotes = {},
+      hasOwn = Object.prototype.hasOwnProperty;
 
   function stepCornInit ( processing ) {
     processing.setup = function() {
       processing.size( 400, 800 );
-      processing.frameRate( 60 );
       var directions = [ "assets/left-arrow.png", "assets/down-arrow.png", "assets/up-arrow.png", "assets/right-arrow.png" ],
           x = 50;
 
@@ -45,6 +47,22 @@ Popcorn(function() {
         p.translate( posx, posy );
         p.image( img, 0, 0 );
         p.popMatrix();
+
+        //notes
+        var key;
+        for( key in activeNotes ) {
+          if( hasOwn.call( activeNotes, key ) ) {
+            var note = allNotes[ key ];
+            p.pushMatrix();
+            p.translate( note.posx, note.posy );
+            p.image( note.img, 0, 0 );
+            p.popMatrix();
+            if ( !note.media.paused ) {
+              note.posy -= 5;
+            }
+          }
+        }
+
       };
 
       this.pulse = function() {
@@ -76,6 +94,46 @@ Popcorn(function() {
       arrows[ i ].pulse();
     }
   };
+
+  var noteDirections = {
+      up: "assets/up-note.png",
+      down: "assets/down-note.png",
+      left: "assets/left-note.png",
+      right: "assets/right-note.png"
+    };
+
+  Popcorn.plugin( "arrow", function() {
+
+    var pInst = p,
+        id,
+        posx,
+        posy;
+
+    return {
+      _setup: function( options ) {
+
+        id = Popcorn.guid();
+        posx = options.posx;
+        posy = options.posy;
+        allNotes[ id ] = {
+          posx: posx || 0,
+          posy: posy || 800,
+          direction: options.direction || "down",
+          img: p.loadImage( noteDirections[ options.direction ] || noteDirections[ "down" ] ),
+          media: this.media
+        };
+
+      },
+      start: function( options ) {
+        allNotes[ id ].posy = posy || 800;
+        activeNotes[ id ] = allNotes[ id ];
+      },
+      end: function( options ) {
+        delete activeNotes[ id ];
+      }
+    };
+
+  });
 
   var popcorn = Popcorn( "#stepCorn", {
     frameAnimation: true
@@ -122,14 +180,13 @@ Popcorn(function() {
 
   popcorn.listen( "canplayall", function() {
 
-    // Neccissary in order for seeking backwards
+    // Necessary in order for seeking backwards
     popcorn.exec( 0, function() {
 
       steps.innerHTML = "0000";
     });
 
     popcorn.parseSM( "stepfiles/nirvanaDestiny.sm", function( data ) {
-
       var beatRate = data[ 0 ].beatRate;
 
       for( var i = data[ 0 ].start; i < popcorn.duration(); i += beatRate ) {
@@ -140,14 +197,31 @@ Popcorn(function() {
         });
       }
 
+      var dir = [ "left", "down", "up", "right" ];
+
       for( var i = 0, l = data.length; i < l; i++ ) {
 
         (function( count ) {
 
-          popcorn.exec( data[ count ].start, function() {
+          var measure = data[ count ];
+          popcorn.exec( measure.start, function() {
 
-            steps.innerHTML = data[ count ].note;
+            steps.innerHTML = measure.note;
           });
+
+          var note = measure.note;
+          for ( var i = 0; i < 4; i++ ) {
+            if ( +note[ i ] > 0 ) {
+              popcorn.arrow({
+                start: ( measure.start - 5 ) >= 0 ? measure.start - 5 : 0,
+                end: measure.start,
+                direction: dir[ i ],
+                posx: 50 + ( 75 * i ),
+                posy: 800
+              });
+            }
+          }
+
         })( i )
       }
     });
