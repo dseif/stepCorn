@@ -80,64 +80,53 @@ Popcorn(function() {
   var popcorn = Popcorn( "#stepCorn", {
     frameAnimation: true
   }),
-  count = 0,
   stepsLeft = document.getElementById( "stepsLeft" ),
   stepsDown= document.getElementById( "stepsDown" ),
   stepsUp = document.getElementById( "stepsUp" ),
   stepsRight = document.getElementById( "stepsRight" ),
   steps = document.getElementById( "steps" ),
-  keysDown = [false, false, false, false];
-  arrowsDown = {
+  keysDown = [ false, false, false, false ],
+  arrowsPressed = {
 
-    37: function()  {
-      keysDown[ 0 ] = true;
-      stepsLeft.innerHTML = "1";
+    37: function( val )  {
+      keysDown[ 0 ] = val;
+      stepsLeft.innerHTML = +val;
     },
-    38: function() {
-      keysDown[ 1 ] = true;
-      stepsUp.innerHTML = "1";
+    38: function( val ) {
+      keysDown[ 1 ] = val;
+      stepsUp.innerHTML = +val;
     },
-    39: function() {
-      keysDown[ 2 ] = true;
-      stepsRight.innerHTML = "1";
+    39: function( val ) {
+      keysDown[ 2 ] = val;
+      stepsRight.innerHTML = +val;
     },
-    40: function() {
-      keysDown[ 3 ] = true;
-      stepsDown.innerHTML = "1";
+    40: function( val ) {
+      keysDown[ 3 ] = val;
+      stepsDown.innerHTML = +val;
     }
   },
-  arrowsUp = {
+  keyPress = function( keyCode, pressed ) {
 
-    37: function()  {
-      keysDown[ 0 ] = false;
-      stepsLeft.innerHTML = "0";
-    },
-    38: function() {
-      keysDown[ 1 ] = false;
-      stepsUp.innerHTML = "0";
-    },
-    39: function() {
-      keysDown[ 2 ] = false;
-      stepsRight.innerHTML = "0";
-    },
-    40: function() {
-      keysDown[ 3 ] = false;
-      stepsDown.innerHTML = "0";
-    }
+    arrowsPressed[ keyCode ] && arrowsPressed[ keyCode ]( pressed );
   };
 
   window.addEventListener( "keydown", function( event ) {
 
-    arrowsDown[ event.keyCode ] && arrowsDown[ event.keyCode ]();
-    console.log( keysDown );
+    keyPress( event.keyCode, true );
   });
 
   window.addEventListener( "keyup", function( event ) {
 
-    arrowsUp[ event.keyCode ] && arrowsUp[ event.keyCode ]();
+    keyPress( event.keyCode, false );
   });
 
   popcorn.listen( "canplayall", function() {
+
+    // Neccissary in order for seeking backwards
+    popcorn.exec( 0, function() {
+
+      steps.innerHTML = "0000";
+    });
 
     popcorn.parseSM( "stepfiles/nirvanaDestiny.sm", function( data ) {
 
@@ -148,21 +137,18 @@ Popcorn(function() {
         popcorn.exec( i, function() {
 
           pulseArrows();
-          steps.style.backgroundColor = "#22ff00";
-
-          setTimeout(function() {
-            steps.style.backgroundColor = "#FFFFFF";
-          }, 250 );
         });
       }
 
       for( var i = 0, l = data.length; i < l; i++ ) {
 
-        popcorn.exec( data[ i ].start, function() {
+        (function( count ) {
 
-          steps.innerHTML = data[ count ].note;
-          count++;
-        });
+          popcorn.exec( data[ count ].start, function() {
+
+            steps.innerHTML = data[ count ].note;
+          });
+        })( i )
       }
     });
   });
